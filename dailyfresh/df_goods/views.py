@@ -42,8 +42,17 @@ def index_ajax(request,nid):
 
 
 
-def detail(request):
-    return render(request,'df_goods/detail.html')
+def detail(request,nid):
+    goods = GoodsInfo.objects.get(id=int(nid))
+    goods.gclick = goods.gclick+1
+    goods.save()
+
+    new_list = goods.gtype.goodsinfo_set.order_by('-id')[0:2]
+    content ={'title':'商品详情','goods':goods,'new_list':new_list}
+    return render(request,'df_goods/detail.html',content)
+
+
+
 @inner
 def list(request,nid,Ipage,sort):
     ty_info = TypeInfo.objects.get(pk=int(nid))
@@ -54,6 +63,7 @@ def list(request,nid,Ipage,sort):
         sf_list = GoodsInfo.objects.filter(gtype_id=int(nid)).order_by('-gprice')
     elif sort == '3':
         sf_list = GoodsInfo.objects.filter(gtype_id=int(nid)).order_by('-gclick')
+    # 分页的逻辑
     pageinator = Paginator(sf_list,10)
     page = pageinator.page(int(Ipage))
 
@@ -63,7 +73,7 @@ def list(request,nid,Ipage,sort):
     # 最新的两个
     new_list = []
     for v in news_list:
-        new_list.append({'gtitle':v.gtitle,'pic':v.gpic.name,'price':v.gprice,'gunit':v.gunit})
+        new_list.append({'id':v.id,'gtitle':v.gtitle,'gpic':v.gpic.name,'price':v.gprice,'gunit':v.gunit})
     # print content
     content={'title':'商品列表',
              'content':content_list,
@@ -73,3 +83,12 @@ def list(request,nid,Ipage,sort):
              'ty_info':ty_info,
              'sort':sort}
     return render(request,'df_goods/list.html',content)
+
+# 重写全文检索
+from haystack.views import SearchView
+class MySearchView(SearchView):
+    def extra_context(self):
+        extra = super(MySearchView, self).extra_context()
+        extra['title']=self.request.GET.get('q')
+        return extra
+

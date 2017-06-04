@@ -1,3 +1,4 @@
+#coding=utf-8
 """dailyfresh URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -21,4 +22,7 @@ urlpatterns = [
     url(r'^user/', include('df_user.urls')),
     url(r'^', include('df_goods.urls')),
     url(r'^tinymce/', include('tinymce.urls')),
+#urls.py中添加搜索的配置
+    # url(r'^search/', include('haystack.urls')),
+
 ]
